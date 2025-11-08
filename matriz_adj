@@ -1,0 +1,222 @@
+#matriz de adjacencia
+def criar_grafo():
+    matriz = []
+    vertices = []
+    return (matriz, vertices)
+
+
+def inserir_vertice(matriz, vertices, vertice):
+    if vertice in vertices:
+        return 
+
+    vertices.append(vertice)
+
+    n = len(vertices)
+    for linha in matriz:
+        linha.append(0)
+
+    nova_linha = [0] * n
+    matriz.append(nova_linha)
+
+
+def inserir_aresta(matriz, vertices, origem, destino, nao_direcionado=False):
+    if origem not in vertices:
+        inserir_vertice(matriz, vertices, origem)
+    if destino not in vertices:
+        inserir_vertice(matriz, vertices, destino)
+
+    i = vertices.index(origem)
+    j = vertices.index(destino)
+
+    matriz[i][j] = 1
+    if nao_direcionado:
+        matriz[j][i] = 1
+
+
+def remover_vertice(matriz, vertices, vertice):
+    if vertice not in vertices:
+        return
+
+    idx = vertices.index(vertice)
+    del matriz[idx]
+
+    for linha in matriz:
+        del linha[idx]
+
+    vertices.remove(vertice)
+
+
+def remover_aresta(matriz, vertices, origem, destino, nao_direcionado=False):
+    if origem not in vertices or destino not in vertices:
+        return
+
+    i = vertices.index(origem)
+    j = vertices.index(destino)
+
+    matriz[i][j] = 0
+    if nao_direcionado:
+        matriz[j][i] = 0
+
+
+def existe_aresta(matriz, vertices, origem, destino):
+    if origem not in vertices or destino not in vertices:
+        return False
+
+    i = vertices.index(origem)
+    j = vertices.index(destino)
+    return matriz[i][j] == 1
+
+
+def vizinhos(matriz, vertices, vertice):
+    if vertice not in vertices:
+        return []
+
+    i = vertices.index(vertice)
+    vizinhos_lista = []
+    for j in range(len(vertices)):
+        if matriz[i][j] == 1:
+            vizinhos_lista.append(vertices[j])
+    return vizinhos_lista
+
+
+def grau_vertices(matriz, vertices):
+    if not vertices:
+        return {}
+
+    n = len(vertices)
+    graus = {}
+
+    for i in range(n):
+        v = vertices[i]
+        saida = sum(matriz[i])  
+        entrada = sum(matriz[j][i] for j in range(n))  
+        total = entrada + saida
+        graus[v] = {"saida": saida, "entrada": entrada, "total": total}
+
+    return graus
+
+
+def percurso_valido(matriz, vertices, caminho):
+    if len(caminho) < 2:
+        return True
+
+    for i in range(len(caminho) - 1):
+        u = caminho[i]
+        v = caminho[i + 1]
+        if not existe_aresta(matriz, vertices, u, v):
+            return False
+    return True
+
+
+def listar_vizinhos(matriz, vertices, vertice):
+    if vertice not in vertices:
+        print(f"Vértice '{vertice}' não existe.")
+        return []
+
+    lista = vizinhos(matriz, vertices, vertice)
+    print(f"Vizinhos de {vertice}: {lista}")
+    return lista
+
+
+def exibir_grafo(matriz, vertices):
+    if not vertices:
+        print("Grafo vazio.")
+        return
+    print(" " * 4, end="")
+    for v in vertices:
+        print(f"{v:>3}", end="")
+    print()
+
+    for i in range(len(vertices)):
+        print(f"{vertices[i]:>3} ", end="")
+        for j in range(len(vertices)):
+            print(f"{matriz[i][j]:>3}", end="")
+        print()
+
+
+def main():
+    matriz, vertices = criar_grafo()
+
+    while True:
+        print("\n" + "="*50)
+        print("     GRAFO - MATRIZ DE ADJACÊNCIA")
+        print("="*50)
+        print("1  - Exibir Grafo")
+        print("2  - Inserir Vértice")
+        print("3  - Inserir Aresta")
+        print("4  - Remover Vértice")
+        print("5  - Remover Aresta")
+        print("6  - Listar Vizinhos")
+        print("7  - Verificar Aresta")
+        print("8  - Graus dos Vértices")
+        print("9  - Verificar Percurso")
+        print("0  - Sair")
+        print("="*50)
+
+        op = input("Opção: ").strip()
+
+        if op == '1':
+            exibir_grafo(matriz, vertices)
+
+        elif op == '2':
+            v = input("Nome do vértice: ").strip()
+            inserir_vertice(matriz, vertices, v)
+            print(f"Vértice '{v}' inserido.")
+
+        elif op == '3':
+            o = input("Origem: ").strip()
+            d = input("Destino: ").strip()
+            tipo = input("Não direcionado? (s/n): ").strip().lower()
+            nd = tipo == 's'
+            inserir_aresta(matriz, vertices, o, d, nd)
+            print(f"Aresta {o} → {d} {'(bidirecional)' if nd else ''} inserida.")
+
+        elif op == '4':
+            v = input("Vértice a remover: ").strip()
+            remover_vertice(matriz, vertices, v)
+            print(f"Vértice '{v}' removido.")
+
+        elif op == '5':
+            o = input("Origem: ").strip()
+            d = input("Destino: ").strip()
+            tipo = input("Não direcionado? (s/n): ").strip().lower()
+            nd = tipo == 's'
+            remover_aresta(matriz, vertices, o, d, nd)
+            print(f"Aresta {o} → {d} removida.")
+
+        elif op == '6':
+            v = input("Vértice: ").strip()
+            listar_vizinhos(matriz, vertices, v)
+
+        elif op == '7':
+            o = input("Origem: ").strip()
+            d = input("Destino: ").strip()
+            if existe_aresta(matriz, vertices, o, d):
+                print(f"Sim, existe aresta {o} → {d}")
+            else:
+                print(f"Não existe aresta {o} → {d}")
+
+        elif op == '8':
+            graus = grau_vertices(matriz, vertices)
+            print("\nGraus dos vértices:")
+            for v, g in graus.items():
+                print(f"  {v}: entrada={g['entrada']}, saída={g['saida']}, total={g['total']}")
+
+        elif op == '9':
+            entrada = input("Caminho (ex: A B C): ").strip()
+            caminho = [x.strip() for x in entrada.split()]
+            if percurso_valido(matriz, vertices, caminho):
+                print(f"Percurso {' -> '.join(caminho)} é VÁLIDO.")
+            else:
+                print(f"Percurso {' -> '.join(caminho)} é INVÁLIDO.")
+
+        elif op == '0':
+            print("Saindo...")
+            break
+
+        else:
+            print("Opção inválida!")
+
+
+if __name__ == "__main__":
+    main()
