@@ -1,0 +1,180 @@
+# lista de arestas
+def criar_grafo():
+    vertices = []
+    arestas = []
+    return vertices, arestas
+
+
+def inserir_vertice(vertices, vertice):
+    if vertice not in vertices:
+        vertices.append(vertice)
+
+
+def inserir_aresta(vertices, arestas, origem, destino, nao_direcionado=False):
+    inserir_vertice(vertices, origem)
+    inserir_vertice(vertices, destino)
+
+    arestas.append([origem, destino])
+    if nao_direcionado:
+        arestas.append([destino, origem])
+
+
+def remover_aresta(arestas, origem, destino, nao_direcionado=False):
+    arestas[:] = [a for a in arestas if a != [origem, destino]]
+
+    if nao_direcionado:
+        arestas[:] = [a for a in arestas if a != [destino, origem]]
+
+
+def remover_vertice(vertices, arestas, vertice):
+    if vertice not in vertices:
+        return
+
+    vertices.remove(vertice)
+    arestas[:] = [a for a in arestas if a[0] != vertice and a[1] != vertice]
+
+
+def existe_aresta(arestas, origem, destino):
+    return [origem, destino] in arestas
+
+
+def vizinhos(vertices, arestas, vertice):
+    vizinhos_lista = []
+    for origem, destino in arestas:
+        if origem == vertice:
+            vizinhos_lista.append(destino)
+    return vizinhos_lista
+
+
+def grau_vertices(vertices, arestas):
+    graus = {v: {"entrada": 0, "saida": 0, "total": 0} for v in vertices}
+
+    for origem, destino in arestas:
+        if origem in graus:
+            graus[origem]["saida"] += 1
+        if destino in graus:
+            graus[destino]["entrada"] += 1
+
+    for v in graus:
+        graus[v]["total"] = graus[v]["entrada"] + graus[v]["saida"]
+
+    return graus
+
+
+def percurso_valido(arestas, caminho):
+    if len(caminho) < 2:
+        return True
+
+    for i in range(len(caminho) - 1):
+        u = caminho[i]
+        v = caminho[i + 1]
+        if not existe_aresta(arestas, u, v):
+            return False
+    return True
+
+
+def listar_vizinhos(vertices, arestas, vertice):
+    if vertice not in vertices:
+        print(f"Vértice '{vertice}' não existe.")
+        return
+
+    lista = vizinhos(vertices, arestas, vertice)
+    print(f"Vizinhos de {vertice}: {lista}")
+
+
+def exibir_grafo(vertices, arestas):
+    print("Vértices:", vertices if vertices else "Nenhum")
+    print("Arestas:")
+    if not arestas:
+        print("  Nenhuma aresta.")
+    else:
+        for origem, destino in arestas:
+            print(f"  {origem} -> {destino}")
+
+
+def main():
+    vertices, arestas = criar_grafo()
+
+    while True:
+        print("\n" + "="*50)
+        print("     GRAFO - LISTA DE ARESTAS")
+        print("="*50)
+        print("1  - Exibir Grafo")
+        print("2  - Inserir Vértice")
+        print("3  - Inserir Aresta")
+        print("4  - Remover Vértice")
+        print("5  - Remover Aresta")
+        print("6  - Listar Vizinhos")
+        print("7  - Verificar Aresta")
+        print("8  - Graus dos Vértices")
+        print("9  - Verificar Percurso")
+        print("0  - Sair")
+        print("="*50)
+
+        op = input("Opção: ").strip()
+
+        if op == '1':
+            exibir_grafo(vertices, arestas)
+
+        elif op == '2':
+            v = input("Nome do vértice: ").strip()
+            inserir_vertice(vertices, v)
+            print(f"Vértice '{v}' inserido.")
+
+        elif op == '3':
+            o = input("Origem: ").strip()
+            d = input("Destino: ").strip()
+            tipo = input("Não direcionado? (s/n): ").strip().lower()
+            nd = tipo == 's'
+            inserir_aresta(vertices, arestas, o, d, nd)
+            print(f"Aresta {o} -> {d} inserida ({'bidirecional' if nd else 'direcionada'}).")
+
+        elif op == '4':
+            v = input("Vértice a remover: ").strip()
+            remover_vertice(vertices, arestas, v)
+            print(f"Vértice '{v}' removido.")
+
+        elif op == '5':
+            o = input("Origem: ").strip()
+            d = input("Destino: ").strip()
+            tipo = input("Não direcionado? (s/n): ").strip().lower()
+            nd = tipo == 's'
+            remover_aresta(arestas, o, d, nd)
+            print(f"Aresta {o} -> {d} removida.")
+
+        elif op == '6':
+            v = input("Vértice: ").strip()
+            listar_vizinhos(vertices, arestas, v)
+
+        elif op == '7':
+            o = input("Origem: ").strip()
+            d = input("Destino: ").strip()
+            if existe_aresta(arestas, o, d):
+                print(f"Sim, existe aresta {o} -> {d}")
+            else:
+                print(f"Não existe aresta {o} -> {d}")
+
+        elif op == '8':
+            graus = grau_vertices(vertices, arestas)
+            print("\nGraus dos vértices:")
+            for v, g in graus.items():
+                print(f"  {v}: entrada={g['entrada']}, saída={g['saida']}, total={g['total']}")
+
+        elif op == '9':
+            entrada = input("Caminho (ex: A B C): ").strip()
+            caminho = [x.strip() for x in entrada.split()]
+            if percurso_valido(arestas, caminho):
+                print(f"Percurso {' -> '.join(caminho)} é VÁLIDO.")
+            else:
+                print(f"Percurso {' -> '.join(caminho)} é INVÁLIDO.")
+
+        elif op == '0':
+            print("Saindo...")
+            break
+
+        else:
+            print("Opção inválida!")
+
+
+if __name__ == "__main__":
+    main()
